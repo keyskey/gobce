@@ -44,6 +44,12 @@ go test ./... -coverprofile coverage.out
 go run ./cmd/gobce analyze --coverprofile coverage.out --format json
 ```
 
+Write JSON result to file (while keeping stdout output):
+
+```bash
+go run ./cmd/gobce analyze --coverprofile coverage.out --format json --output gobce-result.json
+```
+
 Build an executable:
 
 ```bash
@@ -83,7 +89,7 @@ jobs:
 If you want to fail CI by threshold, combine JSON output with `jq`:
 
 ```bash
-go run github.com/keyskey/gobce/cmd/gobce@latest analyze --coverprofile coverage.out --format json > gobce.json
+go run github.com/keyskey/gobce/cmd/gobce@latest analyze --coverprofile coverage.out --format json --output gobce.json
 jq -e '.estimatedBranchCoverage >= 70' gobce.json
 ```
 

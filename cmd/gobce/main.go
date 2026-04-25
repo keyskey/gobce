@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/keyskey/gobce"
 )
@@ -18,6 +19,7 @@ func main() {
 	analyzeCmd := flag.NewFlagSet("analyze", flag.ExitOnError)
 	coverProfile := analyzeCmd.String("coverprofile", "", "path to go coverprofile")
 	outputFormat := analyzeCmd.String("format", "json", "output format (json)")
+	outputPath := analyzeCmd.String("output", "", "optional path to write analysis result JSON")
 	if err := analyzeCmd.Parse(os.Args[2:]); err != nil {
 		fmt.Fprintf(os.Stderr, "parse flags: %v\n", err)
 		os.Exit(2)
@@ -40,15 +42,34 @@ func main() {
 		os.Exit(1)
 	}
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(result); err != nil {
+	encoded, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "encode result: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Keep stdout output for terminal use and piping.
+	if _, err := fmt.Fprintln(os.Stdout, string(encoded)); err != nil {
+		fmt.Fprintf(os.Stderr, "write stdout: %v\n", err)
+		os.Exit(1)
+	}
+
+	if *outputPath != "" {
+		parent := filepath.Dir(*outputPath)
+		if parent != "." {
+			if err := os.MkdirAll(parent, 0o755); err != nil {
+				fmt.Fprintf(os.Stderr, "create output directory: %v\n", err)
+				os.Exit(1)
+			}
+		}
+		if err := os.WriteFile(*outputPath, append(encoded, '\n'), 0o644); err != nil {
+			fmt.Fprintf(os.Stderr, "write output file: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
 func printUsage() {
 	fmt.Fprintln(os.Stderr, "usage:")
-	fmt.Fprintln(os.Stderr, "  gobce analyze --coverprofile <path> --format json")
+	fmt.Fprintln(os.Stderr, "  gobce analyze --coverprofile <path> --format json [--output <path>]")
 }

@@ -35,7 +35,8 @@ go test ./... -coverprofile coverage.out
 
 go run ./cmd/gobce analyze \
   --coverprofile coverage.out \
-  --format json
+  --format json \
+  --output gobce-result.json
 ```
 
 出力例:
