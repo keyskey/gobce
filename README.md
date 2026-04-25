@@ -105,4 +105,6 @@ After push:
 
 ## Design
 
-Design notes are available in `docs/gobce.md`.
+Design notes are available in:
+- `docs/gobce.md` (concept and design notes)
+- `docs/how-gobce-works.md` (beginner-friendly implementation walkthrough)
