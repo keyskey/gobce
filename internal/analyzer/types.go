@@ -21,7 +21,9 @@ type UncoveredBranch struct {
 type coverageBlock struct {
 	FilePath  string
 	StartLine int
+	StartCol  int
 	EndLine   int
+	EndCol    int
 	NumStmts  int
 	Count     int
 }

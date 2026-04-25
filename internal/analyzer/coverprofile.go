@@ -80,11 +80,11 @@ func parseCoverProfileLine(line string) (coverageBlock, error) {
 		return coverageBlock{}, fmt.Errorf("invalid span: %q", span)
 	}
 
-	startLine, err := parseSpanLine(spanParts[0])
+	startLine, startCol, err := parseSpanPosition(spanParts[0])
 	if err != nil {
 		return coverageBlock{}, err
 	}
-	endLine, err := parseSpanLine(spanParts[1])
+	endLine, endCol, err := parseSpanPosition(spanParts[1])
 	if err != nil {
 		return coverageBlock{}, err
 	}
@@ -92,20 +92,26 @@ func parseCoverProfileLine(line string) (coverageBlock, error) {
 	return coverageBlock{
 		FilePath:  filepath.Clean(filePath),
 		StartLine: startLine,
+		StartCol:  startCol,
 		EndLine:   endLine,
+		EndCol:    endCol,
 		NumStmts:  stmts,
 		Count:     count,
 	}, nil
 }
 
-func parseSpanLine(pos string) (int, error) {
+func parseSpanPosition(pos string) (int, int, error) {
 	dot := strings.Index(pos, ".")
 	if dot == -1 {
-		return 0, fmt.Errorf("invalid position format: %q", pos)
+		return 0, 0, fmt.Errorf("invalid position format: %q", pos)
 	}
 	line, err := strconv.Atoi(pos[:dot])
 	if err != nil {
-		return 0, fmt.Errorf("invalid line in position: %w", err)
+		return 0, 0, fmt.Errorf("invalid line in position: %w", err)
 	}
-	return line, nil
+	col, err := strconv.Atoi(pos[dot+1:])
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid column in position: %w", err)
+	}
+	return line, col, nil
 }

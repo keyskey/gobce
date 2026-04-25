@@ -114,20 +114,28 @@ func collectCaseClauseCandidates(filePath string, fset *token.FileSet, blocks []
 }
 
 func spanCovered(blocks []coverageBlock, fset *token.FileSet, start token.Pos, end token.Pos) bool {
-	startLine := fset.Position(start).Line
-	endLine := fset.Position(end).Line
+	startPos := fset.Position(start)
+	endPos := fset.Position(end)
 
 	for _, b := range blocks {
 		if b.Count <= 0 {
 			continue
 		}
-		if linesOverlap(startLine, endLine, b.StartLine, b.EndLine) {
+		if spansOverlap(startPos.Line, startPos.Column, endPos.Line, endPos.Column, b.StartLine, b.StartCol, b.EndLine, b.EndCol) {
 			return true
 		}
 	}
 	return false
 }
 
-func linesOverlap(aStart, aEnd, bStart, bEnd int) bool {
-	return aStart <= bEnd && bStart <= aEnd
+func spansOverlap(aStartLine, aStartCol, aEndLine, aEndCol, bStartLine, bStartCol, bEndLine, bEndCol int) bool {
+	return positionLess(aStartLine, aStartCol, bEndLine, bEndCol) &&
+		positionLess(bStartLine, bStartCol, aEndLine, aEndCol)
+}
+
+func positionLess(lineA, colA, lineB, colB int) bool {
+	if lineA != lineB {
+		return lineA < lineB
+	}
+	return colA < colB
 }
