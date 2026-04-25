@@ -1,10 +1,12 @@
 package analyzer
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 )
 
 func collectBranchCandidates(blocks []coverageBlock) ([]branchCandidate, error) {
@@ -17,6 +19,9 @@ func collectBranchCandidates(blocks []coverageBlock) ([]branchCandidate, error) 
 	for filePath, fileBlocks := range byFile {
 		candidates, err := collectFileBranchCandidates(filePath, fileBlocks)
 		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
 			return nil, err
 		}
 		result = append(result, candidates...)
