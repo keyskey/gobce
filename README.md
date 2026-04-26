@@ -37,6 +37,24 @@ Recommended archive set:
 - linux-arm64
 - linux-amd64
 
+Install from a prebuilt archive (example: `v0.1.0`, `darwin-arm64`):
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
+```
+
+Install a specific version:
+
+```bash
+VERSION=v0.1.0 curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
+```
+
+Install to a custom directory:
+
+```bash
+INSTALL_DIR="$HOME/.local/bin" curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
+```
+
 ## CLI Usage
 
 ```bash
