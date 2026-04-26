@@ -95,9 +95,36 @@ jq -e '.estimatedBranchCoverage >= 70' gobce.json
 
 For stable CI behavior, prefer pinned versions (`@vX.Y.Z`) over `@latest`.
 
+## Versioning Policy
+
+`gobce` follows [Semantic Versioning](https://semver.org/).
+
+During the pre-1.0 phase, this project is versioned as `0.x` while coverage logic is validated in a real project.
+
+- `PATCH` (`0.1.0` -> `0.1.1`): bug fixes only
+- `MINOR` (`0.1.1` -> `0.2.0`): new features, behavior changes, and potentially breaking changes
+- `MAJOR` (`1.x`): used after the interface and output become stable
+
+Please assume that interfaces and output formats may change between `0.x` minor versions.
+
+Version tags use the `vX.Y.Z` format (for example, `v0.1.0`).
+
 ## Release Flow
 
 This repository is configured to publish GitHub Releases via GoReleaser when a version tag is pushed.
+Release notes are generated automatically from git commits between tags using GoReleaser changelog support.
+
+You can create the next SemVer tag with:
+
+```bash
+make tag-patch
+make tag-minor
+make tag-major
+# or
+make tag-next TYPE=patch
+make tag-next TYPE=minor
+make tag-next TYPE=major
+```
 
 ```bash
 git tag v0.1.0
@@ -107,7 +134,10 @@ git push origin v0.1.0
 After push:
 - GitHub Actions workflow `release` runs automatically
 - GitHub Release is created for `v0.1.0`
+- Release notes are generated from commit history
 - OS/arch archives and `checksums.txt` are uploaded
+
+To keep generated release notes clean, prefer commit prefixes such as `feat:`, `fix:`, `refactor:`, and `perf:`.
 
 ## Design
 

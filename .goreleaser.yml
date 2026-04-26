@@ -31,3 +31,13 @@ checksum:
 
 changelog:
   use: git
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - "merge conflict"
+      - "^Merge pull request"
+      - "^Merge branch"
