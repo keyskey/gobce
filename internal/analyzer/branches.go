@@ -148,17 +148,23 @@ func ifBodyTerminates(body *ast.BlockStmt) bool {
 	}
 }
 
+// fallthroughCovered reports whether execution can reach the first statement after body
+// (implicit else) according to coverage. The next cover block rarely starts at body.End()
+// (closing brace); it usually begins at the following statement, so we take the nearest
+// block in this file whose start is at or after body.End().
 func fallthroughCovered(blocks []coverageBlock, fset *token.FileSet, body *ast.BlockStmt) bool {
 	endPos := fset.Position(body.End())
-	for _, b := range blocks {
-		if b.Count <= 0 {
+	var nearest *coverageBlock
+	for i := range blocks {
+		b := &blocks[i]
+		if positionLess(b.StartLine, b.StartCol, endPos.Line, endPos.Column) {
 			continue
 		}
-		if b.StartLine == endPos.Line && b.StartCol == endPos.Column {
-			return true
+		if nearest == nil || positionLess(b.StartLine, b.StartCol, nearest.StartLine, nearest.StartCol) {
+			nearest = b
 		}
 	}
-	return false
+	return nearest != nil && nearest.Count > 0
 }
 
 func blockStmtCovered(blocks []coverageBlock, fset *token.FileSet, body *ast.BlockStmt) bool {
