@@ -25,7 +25,7 @@ go install github.com/keyskey/gobce/cmd/gobce@latest
 For CI and team-wide reproducibility, pin a version tag:
 
 ```bash
-go install github.com/keyskey/gobce/cmd/gobce@v0.1.0
+go install github.com/keyskey/gobce/cmd/gobce@v0.2.0
 ```
 
 ## Binary Distribution
@@ -37,7 +37,7 @@ Recommended archive set:
 - linux-arm64
 - linux-amd64
 
-Install from a prebuilt archive (example: `v0.1.0`, `darwin-arm64`):
+Install from a prebuilt archive (example: `v0.2.0`, `darwin-arm64`):
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
@@ -46,7 +46,7 @@ curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install
 Install a specific version:
 
 ```bash
-VERSION=v0.1.0 curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
+VERSION=v0.2.0 curl -fsSL "https://raw.githubusercontent.com/keyskey/gobce/main/scripts/install.sh" | sh
 ```
 
 Install to a custom directory:
@@ -125,7 +125,7 @@ During the pre-1.0 phase, this project is versioned as `0.x` while coverage logi
 
 Please assume that interfaces and output formats may change between `0.x` minor versions.
 
-Version tags use the `vX.Y.Z` format (for example, `v0.1.0`).
+Version tags use the `vX.Y.Z` format (for example, `v0.2.0`).
 
 ## Release Flow
 
@@ -145,13 +145,13 @@ make tag-next TYPE=major
 ```
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 After push:
 - GitHub Actions workflow `release` runs automatically
-- GitHub Release is created for `v0.1.0`
+- GitHub Release is created for `v0.2.0`
 - Release notes are generated from commit history
 - OS/arch archives and `checksums.txt` are uploaded
 
