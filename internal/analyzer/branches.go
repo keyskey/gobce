@@ -44,7 +44,7 @@ func collectFileBranchCandidates(filePath string, blocks []coverageBlock) ([]bra
 				FilePath: filePath,
 				Line:     fset.Position(n.Body.Lbrace).Line,
 				Kind:     "if_true_path",
-				Covered:  spanCovered(blocks, fset, n.Body.Pos(), n.Body.End()),
+				Covered:  blockStmtCovered(blocks, fset, n.Body),
 			})
 
 			if n.Else != nil {
@@ -54,6 +54,13 @@ func collectFileBranchCandidates(filePath string, blocks []coverageBlock) ([]bra
 					Kind:     "if_false_path",
 					Covered:  spanCovered(blocks, fset, n.Else.Pos(), n.Else.End()),
 				})
+			} else if ifBodyTerminates(n.Body) {
+				candidates = append(candidates, branchCandidate{
+					FilePath: filePath,
+					Line:     fset.Position(n.If).Line,
+					Kind:     "if_implicit_false_path",
+					Covered:  fallthroughCovered(blocks, fset, n.Body),
+				})
 			}
 
 		case *ast.SwitchStmt:
@@ -61,7 +68,7 @@ func collectFileBranchCandidates(filePath string, blocks []coverageBlock) ([]bra
 		case *ast.TypeSwitchStmt:
 			candidates = append(candidates, collectCaseClauseCandidates(filePath, fset, blocks, n.Body.List, "type_switch_case_path", "type_switch_default_path")...)
 		case *ast.ForStmt:
-			bodyCovered := spanCovered(blocks, fset, n.Body.Pos(), n.Body.End())
+			bodyCovered := blockStmtCovered(blocks, fset, n.Body)
 			stmtCovered := spanCovered(blocks, fset, n.Pos(), n.Body.Lbrace)
 			candidates = append(candidates, branchCandidate{
 				FilePath: filePath,
@@ -76,7 +83,7 @@ func collectFileBranchCandidates(filePath string, blocks []coverageBlock) ([]bra
 				Covered:  stmtCovered && !bodyCovered,
 			})
 		case *ast.RangeStmt:
-			bodyCovered := spanCovered(blocks, fset, n.Body.Pos(), n.Body.End())
+			bodyCovered := blockStmtCovered(blocks, fset, n.Body)
 			stmtCovered := spanCovered(blocks, fset, n.Pos(), n.Body.Lbrace)
 			candidates = append(candidates, branchCandidate{
 				FilePath: filePath,
@@ -116,6 +123,46 @@ func collectCaseClauseCandidates(filePath string, fset *token.FileSet, blocks []
 		})
 	}
 	return candidates
+}
+
+func ifBodyTerminates(body *ast.BlockStmt) bool {
+	if len(body.List) == 0 {
+		return false
+	}
+
+	last := body.List[len(body.List)-1]
+	switch s := last.(type) {
+	case *ast.ReturnStmt:
+		return true
+	case *ast.BranchStmt:
+		return true
+	case *ast.ExprStmt:
+		call, ok := s.X.(*ast.CallExpr)
+		if !ok {
+			return false
+		}
+		ident, ok := call.Fun.(*ast.Ident)
+		return ok && ident.Name == "panic"
+	default:
+		return false
+	}
+}
+
+func fallthroughCovered(blocks []coverageBlock, fset *token.FileSet, body *ast.BlockStmt) bool {
+	endPos := fset.Position(body.End())
+	for _, b := range blocks {
+		if b.Count <= 0 {
+			continue
+		}
+		if b.StartLine == endPos.Line && b.StartCol == endPos.Column {
+			return true
+		}
+	}
+	return false
+}
+
+func blockStmtCovered(blocks []coverageBlock, fset *token.FileSet, body *ast.BlockStmt) bool {
+	return spanCovered(blocks, fset, body.Lbrace+1, body.End())
 }
 
 func spanCovered(blocks []coverageBlock, fset *token.FileSet, start token.Pos, end token.Pos) bool {
