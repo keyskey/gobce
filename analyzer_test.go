@@ -210,6 +210,46 @@ func score(v int) int {
 	}
 }
 
+// Regression: coverprofile ends the if-body block at the closing "}", but the next
+// statement often starts on the following line; fallthrough must not require an exact
+// start position match with body.End().
+func TestAnalyzeIfWithoutElseFallthroughNextLine(t *testing.T) {
+	tmp := t.TempDir()
+	srcPath := filepath.Join(tmp, "sample.go")
+	src := `package sample
+
+func Get(v int) int {
+	if v > 10 {
+		return 1
+	}
+	return 0
+}
+`
+	if err := os.WriteFile(srcPath, []byte(src), 0o644); err != nil {
+		t.Fatalf("write source: %v", err)
+	}
+
+	coverPath := filepath.Join(tmp, "coverage.out")
+	coverage := strings.Join([]string{
+		"mode: set",
+		srcPath + ":3.23,4.13 1 1",
+		srcPath + ":4.13,6.3 1 0",
+		srcPath + ":7.2,7.10 1 1",
+	}, "\n")
+	if err := os.WriteFile(coverPath, []byte(coverage), 0o644); err != nil {
+		t.Fatalf("write coverage: %v", err)
+	}
+
+	result, err := Analyze(AnalyzeInput{CoverProfilePath: coverPath})
+	if err != nil {
+		t.Fatalf("analyze: %v", err)
+	}
+
+	if hasUncoveredBranchKind(result, "if_implicit_false_path") {
+		t.Fatalf("expected if_implicit_false_path covered when next-line fallthrough block has count")
+	}
+}
+
 func TestAnalyzeIfWithoutElseNonTerminatingBody(t *testing.T) {
 	tmp := t.TempDir()
 	srcPath := filepath.Join(tmp, "sample.go")
