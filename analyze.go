@@ -26,9 +26,8 @@ func convertUncoveredRollup(in analyzer.UncoveredBranchesReport) UncoveredBranch
 			br := make([]UncoveredBranch, len(f.Branches))
 			for k, b := range f.Branches {
 				br[k] = UncoveredBranch{
-					Line:           b.Line,
-					Kind:           b.Kind,
-					Recommendation: b.Recommendation,
+					Line: b.Line,
+					Kind: b.Kind,
 				}
 			}
 			files[j] = UncoveredFile{Path: f.Path, Branches: br}

@@ -7,10 +7,9 @@ import (
 )
 
 type uncoveredSource struct {
-	file           string
-	line           int
-	kind           string
-	recommendation string
+	file string
+	line int
+	kind string
 }
 
 func groupUncoveredSources(rows []uncoveredSource, moduleRoot, modulePath string) UncoveredBranchesReport {
@@ -28,9 +27,8 @@ func groupUncoveredSources(rows []uncoveredSource, moduleRoot, modulePath string
 		}
 		k := fileKey(displayPath)
 		pkgFiles[importPath][k] = append(pkgFiles[importPath][k], UncoveredBranch{
-			Line:           row.line,
-			Kind:           row.kind,
-			Recommendation: row.recommendation,
+			Line: row.line,
+			Kind: row.kind,
 		})
 	}
 

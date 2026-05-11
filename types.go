@@ -27,7 +27,6 @@ type UncoveredFile struct {
 }
 
 type UncoveredBranch struct {
-	Line           int    `json:"line"`
-	Kind           string `json:"kind"`
-	Recommendation string `json:"recommendation,omitempty"`
+	Line int    `json:"line"`
+	Kind string `json:"kind"`
 }

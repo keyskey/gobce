@@ -99,7 +99,7 @@ generated-code filtering improvements
 4. coverage block と branch candidate span を対応付ける。
 5. 各 branch side が実行されたかを推定する。
 6. estimated C1 percentage を計算する。
-7. import path とファイルごとにまとめた uncovered branch finding（line, kind, recommendation）を出す。
+7. import path とファイルごとにまとめた uncovered branch finding（line, kind）を出す。
 ```
 
 ## 重要な制約
