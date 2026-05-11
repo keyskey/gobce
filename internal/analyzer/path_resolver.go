@@ -6,9 +6,8 @@ import (
 	"strings"
 )
 
-func normalizeBlockPaths(blocks []coverageBlock, coverProfilePath string) ([]coverageBlock, error) {
+func normalizeBlockPaths(blocks []coverageBlock, coverProfilePath string, moduleRoot string, modulePath string) ([]coverageBlock, error) {
 	coverDir := filepath.Dir(coverProfilePath)
-	moduleRoot, modulePath := discoverModuleContext(coverDir)
 
 	normalized := make([]coverageBlock, 0, len(blocks))
 	for _, b := range blocks {

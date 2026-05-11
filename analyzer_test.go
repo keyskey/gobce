@@ -44,18 +44,11 @@ func score(v int) int {
 	if result.Language != "go" {
 		t.Fatalf("language: got %q", result.Language)
 	}
-	if len(result.UncoveredBranches) == 0 {
+	if totalUncoveredBranches(result) == 0 {
 		t.Fatalf("expected uncovered branches")
 	}
 
-	var hasIfFalse bool
-	for _, b := range result.UncoveredBranches {
-		if b.Kind == "if_false_path" {
-			hasIfFalse = true
-			break
-		}
-	}
-	if !hasIfFalse {
+	if !hasUncoveredBranchKind(result, "if_false_path") {
 		t.Fatalf("expected if_false_path in uncovered branches")
 	}
 }
@@ -86,14 +79,7 @@ func score(v int) int { if v > 10 { return 1 } else { return 2 } }
 		t.Fatalf("analyze: %v", err)
 	}
 
-	var hasIfFalse bool
-	for _, b := range result.UncoveredBranches {
-		if b.Kind == "if_false_path" {
-			hasIfFalse = true
-			break
-		}
-	}
-	if !hasIfFalse {
+	if !hasUncoveredBranchKind(result, "if_false_path") {
 		t.Fatalf("expected if_false_path in uncovered branches")
 	}
 }
@@ -132,7 +118,7 @@ func score(v int) int {
 		t.Fatalf("analyze should not fail on unresolved source path: %v", err)
 	}
 
-	if len(result.UncoveredBranches) == 0 {
+	if totalUncoveredBranches(result) == 0 {
 		t.Fatalf("expected uncovered branches from resolvable source file")
 	}
 }
@@ -325,10 +311,24 @@ func score(v int) int {
 	}
 }
 
+func totalUncoveredBranches(r Result) int {
+	n := 0
+	for _, p := range r.UncoveredBranches.Packages {
+		for _, f := range p.Files {
+			n += len(f.Branches)
+		}
+	}
+	return n
+}
+
 func hasUncoveredBranchKind(result Result, kind string) bool {
-	for _, b := range result.UncoveredBranches {
-		if b.Kind == kind {
-			return true
+	for _, p := range result.UncoveredBranches.Packages {
+		for _, f := range p.Files {
+			for _, b := range f.Branches {
+				if b.Kind == kind {
+					return true
+				}
+			}
 		}
 	}
 	return false

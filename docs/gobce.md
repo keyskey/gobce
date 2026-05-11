@@ -46,13 +46,24 @@ go run ./cmd/gobce analyze \
   "language": "go",
   "statementCoverage": 82.1,
   "estimatedBranchCoverage": 68.4,
-  "uncoveredBranches": [
-    {
-      "file": "internal/order/validator.go",
-      "line": 42,
-      "kind": "if_false_path"
-    }
-  ]
+  "uncoveredBranches": {
+    "packages": [
+      {
+        "importPath": "github.com/example/app/internal/order",
+        "files": [
+          {
+            "path": "internal/order/validator.go",
+            "branches": [
+              {
+                "line": 42,
+                "kind": "if_false_path"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -88,7 +99,7 @@ generated-code filtering improvements
 4. coverage block と branch candidate span を対応付ける。
 5. 各 branch side が実行されたかを推定する。
 6. estimated C1 percentage を計算する。
-7. file, line, kind, recommendation 付きの uncovered branch finding を出す。
+7. import path とファイルごとにまとめた uncovered branch finding（line, kind）を出す。
 ```
 
 ## 重要な制約

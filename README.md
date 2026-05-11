@@ -111,6 +111,9 @@ go run github.com/keyskey/gobce/cmd/gobce@latest analyze --coverprofile coverage
 jq -e '.estimatedBranchCoverage >= 70' gobce.json
 ```
 
+`uncoveredBranches` is nested by `importPath` and file `path`. To flatten all branch entries with `jq`, for example:  
+`jq '[.uncoveredBranches.packages[] | .files[] | .branches[]]' gobce.json`
+
 For stable CI behavior, prefer pinned versions (`@vX.Y.Z`) over `@latest`.
 
 ## Versioning Policy
