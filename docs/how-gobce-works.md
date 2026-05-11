@@ -93,13 +93,24 @@ sample.go:6.8,8.3  ... count=0   (false 側の範囲)
 
 ```json
 {
-  "uncoveredBranches": [
-    {
-      "file": "sample.go",
-      "line": 6,
-      "kind": "if_false_path"
-    }
-  ]
+  "uncoveredBranches": {
+    "packages": [
+      {
+        "importPath": "example.com/m",
+        "files": [
+          {
+            "path": "sample.go",
+            "branches": [
+              {
+                "line": 6,
+                "kind": "if_false_path"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -115,8 +126,7 @@ sample.go:6.8,8.3  ... count=0   (false 側の範囲)
   `gobce` が分岐候補に対して covered/uncovered を推定して計算した割合。
 
 - `uncoveredBranches`  
-  テスト実行時にまだ実行されていないと推定された分岐の一覧。
-  どのファイル・どの行・どの kind かが入ります。
+  テスト実行時にまだ実行されていないと推定された分岐の一覧。`go.mod` の module path が分かる場合は `importPath` とモジュール相対の `path` に階層化し、各ファイルの `branches` に行番号と `kind` が入ります。
 
 ## 「推定」になる理由
 
@@ -135,7 +145,7 @@ A. 直線的な処理のコードはテスト実行時に実行されていて�
 
 ### Q. まず何を見ればいい？
 
-A. `uncoveredBranches` から見れば OK です。  
+A. `uncoveredBranches.packages` 以下を辿れば OK です。  
 分岐の未到達ポイントが具体的に出るので、テスト追加の優先順位を付けやすくなります。
 
 ## 開発者向けの読み進め順

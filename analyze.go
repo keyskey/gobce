@@ -10,20 +10,30 @@ func Analyze(input AnalyzeInput) (Result, error) {
 		return Result{}, err
 	}
 
-	uncovered := make([]UncoveredBranch, 0, len(analysisResult.UncoveredBranches))
-	for _, b := range analysisResult.UncoveredBranches {
-		uncovered = append(uncovered, UncoveredBranch{
-			File:           b.File,
-			Line:           b.Line,
-			Kind:           b.Kind,
-			Recommendation: b.Recommendation,
-		})
-	}
-
 	return Result{
 		Language:                analysisResult.Language,
 		StatementCoverage:       analysisResult.StatementCoverage,
 		EstimatedBranchCoverage: analysisResult.EstimatedBranchCoverage,
-		UncoveredBranches:       uncovered,
+		UncoveredBranches:       convertUncoveredRollup(analysisResult.UncoveredBranches),
 	}, nil
+}
+
+func convertUncoveredRollup(in analyzer.UncoveredBranchesReport) UncoveredBranchesReport {
+	pkgs := make([]UncoveredPackage, len(in.Packages))
+	for i, p := range in.Packages {
+		files := make([]UncoveredFile, len(p.Files))
+		for j, f := range p.Files {
+			br := make([]UncoveredBranch, len(f.Branches))
+			for k, b := range f.Branches {
+				br[k] = UncoveredBranch{
+					Line:           b.Line,
+					Kind:           b.Kind,
+					Recommendation: b.Recommendation,
+				}
+			}
+			files[j] = UncoveredFile{Path: f.Path, Branches: br}
+		}
+		pkgs[i] = UncoveredPackage{ImportPath: p.ImportPath, Files: files}
+	}
+	return UncoveredBranchesReport{Packages: pkgs}
 }

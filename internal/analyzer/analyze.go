@@ -7,10 +7,11 @@ func Analyze(input Input) (Result, error) {
 		return Result{}, errors.New("coverprofile path is required")
 	}
 
-	blocks, err := parseCoverProfile(input.CoverProfilePath)
+	parsed, err := parseCoverProfile(input.CoverProfilePath)
 	if err != nil {
 		return Result{}, err
 	}
+	blocks := parsed.Blocks
 
 	statementCoverage := computeStatementCoverage(blocks)
 	candidates, err := collectBranchCandidates(blocks)
@@ -19,19 +20,21 @@ func Analyze(input Input) (Result, error) {
 	}
 
 	covered := 0
-	uncovered := make([]UncoveredBranch, 0)
+	sources := make([]uncoveredSource, 0)
 	for _, c := range candidates {
 		if c.Covered {
 			covered++
 			continue
 		}
 
-		uncovered = append(uncovered, UncoveredBranch{
-			File: c.FilePath,
-			Line: c.Line,
-			Kind: c.Kind,
+		sources = append(sources, uncoveredSource{
+			file: c.FilePath,
+			line: c.Line,
+			kind: c.Kind,
 		})
 	}
+
+	rollup := groupUncoveredSources(sources, parsed.ModuleRoot, parsed.ModulePath)
 
 	estimated := 100.0
 	if len(candidates) > 0 {
@@ -42,6 +45,6 @@ func Analyze(input Input) (Result, error) {
 		Language:                "go",
 		StatementCoverage:       statementCoverage,
 		EstimatedBranchCoverage: estimated,
-		UncoveredBranches:       uncovered,
+		UncoveredBranches:       rollup,
 	}, nil
 }

@@ -10,10 +10,17 @@ import (
 	"strings"
 )
 
-func parseCoverProfile(path string) ([]coverageBlock, error) {
+// ParsedCoverProfile holds normalized coverage blocks and module context used for path grouping.
+type ParsedCoverProfile struct {
+	Blocks     []coverageBlock
+	ModuleRoot string
+	ModulePath string
+}
+
+func parseCoverProfile(path string) (ParsedCoverProfile, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open coverprofile: %w", err)
+		return ParsedCoverProfile{}, fmt.Errorf("open coverprofile: %w", err)
 	}
 	defer f.Close()
 
@@ -32,24 +39,31 @@ func parseCoverProfile(path string) ([]coverageBlock, error) {
 
 		b, err := parseCoverProfileLine(line)
 		if err != nil {
-			return nil, fmt.Errorf("parse coverprofile line %d: %w", lineNo, err)
+			return ParsedCoverProfile{}, fmt.Errorf("parse coverprofile line %d: %w", lineNo, err)
 		}
 		blocks = append(blocks, b)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("scan coverprofile: %w", err)
+		return ParsedCoverProfile{}, fmt.Errorf("scan coverprofile: %w", err)
 	}
 
 	if len(blocks) == 0 {
-		return nil, errors.New("coverprofile contains no coverage blocks")
+		return ParsedCoverProfile{}, errors.New("coverprofile contains no coverage blocks")
 	}
 
-	normalizedBlocks, err := normalizeBlockPaths(blocks, path)
+	coverDir := filepath.Dir(path)
+	moduleRoot, modulePath := discoverModuleContext(coverDir)
+
+	normalizedBlocks, err := normalizeBlockPaths(blocks, path, moduleRoot, modulePath)
 	if err != nil {
-		return nil, err
+		return ParsedCoverProfile{}, err
 	}
-	return normalizedBlocks, nil
+	return ParsedCoverProfile{
+		Blocks:     normalizedBlocks,
+		ModuleRoot: moduleRoot,
+		ModulePath: modulePath,
+	}, nil
 }
 
 func parseCoverProfileLine(line string) (coverageBlock, error) {
